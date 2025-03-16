@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Actualizar</title>
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-lg center-box">
+        <div class="card-header bg-primary">
+            <h4>Actualizar</h4>
+        </div>
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <form action="{{ url_for('actualizar', user_id=user_id) }}" method="POST">
+                {% if users %}
+                    <input type="text" class="form-control" value="{{ users.nome }}" name="nome" placeholder="Nome">
+                    <input type="date" class="form-control" value="{{ users.data_nasc }}" name="data_nasc" placeholder="Data de nascimento">
+                    <input type="email" class="form-control" value="{{ users.email }}" name="email" placeholder="E-mail">
+                    <input type="text" class="form-control" value="{{ users.contacto }}" name="contacto" placeholder="Contato">
+                    <input type="password" class="form-control" value="{{ users.password }}" name="password" placeholder="Senha"><br>
+                    <button type="submit" class="btn btn-success">Atualizar</button>
+                {% endif %}
+            </form>
+            
+        </form>
+        </div>
+    </div>
+</body>
+</html>

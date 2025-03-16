@@ -8,13 +8,17 @@
     <title>flaskPI</title>
     <style>
         .center-box {
-            width: 50%;
+            
             max-width: 1000px;
         }
     </style>
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100 bg-light">
-    
+    {% if msg %}
+        <div class="alert alert-sucess" role="alert">
+            {{msg}}
+        </div>
+    {% endif %}
     <div class="card shadow-lg center-box">
 
         <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
@@ -50,7 +54,11 @@
                                 <i class="btn btn-danger bi bi-trash"></i>
                             </a>
                         </th>
-                        <th><i class="btn btn-success bi bi-pen"></i></th>
+                        <th>
+                            <a href="{{ url_for('actualizar', user_id=user.id) }}">
+                                <i class="btn btn-success bi bi-pen"></i>
+                            </a>
+                        </th>
                     </tr>
             {% endfor %}
                 </tbody>

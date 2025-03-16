@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
 import firebase_admin
 from firebase_admin import credentials, firestore
 from flask_session import Session
@@ -46,15 +46,39 @@ def adicionar():
         return redirect(url_for('index'))
     return render_template('adicionar.html')
 
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form['useremail']
-        session['user_email'] = email
-        return redirect(url_for('index', user=session['user_email']))
+        email = request.form.get("useremail")
+        password = request.form.get("userpassword")
 
-    return render_template("login.html")
+        user_ref = db.collection("usuarios")
+        user_email = user_ref.where("email", "==", email).get()
+        
+        if not user_email:
+            return "usuario nao encontrado"
+        
+        user = user_email[0]
+        user_data = user.to_dict()
+        user_cod = user_data['password']
+
+        # Verifica se a requisição veio do app móvel
+        is_mobile = request.headers.get("App-Origin") == "KivyMD"
+
+        if email == email and password == user_cod:
+            session['user_email'] = email  # Salva o login na sessão
+
+            if is_mobile:
+                return jsonify({"success": True, "user": email, "token": "abcdef123456"})  
+            
+            return redirect(url_for('index'))
+
+        else:
+            if is_mobile:
+                return jsonify({"success": False, "message": "Email ou senha incorretos"}), 401
+            return render_template("login.html", msg="Email ou senha incorretos")  # Mostra erro no HTML
+
+    return render_template("login.html")  # Exibe a página de login para usuários web
 
 @app.route("/log-off")
 def log_off():
@@ -67,6 +91,43 @@ def deletar(user_id):
     usuario_ref.delete()
     return redirect(url_for("index"))
 
+@app.route("/actualizar/<user_id>", methods=["GET", "POST"])
+def actualizar(user_id):
+    usuario_ref = db.collection("usuarios").document(user_id)
+    usuario = usuario_ref.get()                                                                   
+    usuario_id = user_id  
 
-if __name__=="__main__":
+    if not usuario.exists:
+        return f"Erro: o usuário {user_id} não foi encontrado"
+    
+    if request.method == "POST":
+        nome = request.form.get('nome')
+        contacto = request.form.get('contacto')
+        password = request.form.get('password')
+        data_nasc = request.form.get('data_nasc')
+        email = request.form.get('email')
+
+        dados_para_atualizar = {}
+
+        if nome:
+            dados_para_atualizar['nome'] = nome
+        if email:
+            dados_para_atualizar['email'] = email
+        if password:
+            dados_para_atualizar['password'] = password
+        if data_nasc:
+            dados_para_atualizar['data_nasc'] = data_nasc
+        if contacto:
+            dados_para_atualizar['contacto'] = contacto
+
+        if dados_para_atualizar:
+            usuario_ref.update(dados_para_atualizar)
+            return redirect(url_for('index'))
+        
+        msg = "Nenhum dado atualizado"
+        return render_template('index.html', msg=msg)
+
+    return render_template('actualizar.html', users=usuario.to_dict(), user_id=usuario_id )
+
+if __name__== "__main__":
     app.run(debug=True)
